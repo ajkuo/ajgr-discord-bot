@@ -53,42 +53,33 @@ class AJGRbot(discord.Client):
                 raise self.exit_signal
 
     async def on_ready(self):
-        # try:
-        os.system('cls')
-        with open("welcome_ascii.txt") as text_file:
-            print(text_file.read())
-        print("                                      Version:{}".format(config.VERSION))
-        print()
-       # try:
-        for mod in self.module_list:
-            self.load_module(mod)
-            print(" [v] Module '{}' is ready.".format(mod))
-        # for module in Module.modules:
-        #     print('Loading module {}.'.format(module.__name__))
-        #     module_instance = module(self)
-        #     print("Do")
-        #     self.module_list.append(module_instance)
-        #     print("DONE")
-        # print(self.module_list)
+        try:
+            os.system('cls')
+            with open("welcome_ascii.txt") as text_file:
+                print(text_file.read())
+            print("                                      Version:{}".format(config.VERSION))
+            print()
+            try:
+                for mod in self.module_list:
+                    self.load_module(mod)
+                    print(" [v] Module '{}' is ready.".format(mod))
 
-            # self.safe_print('    Module "{0}" is ready.'.format(cog))
-
-        # except Exception as e:
-        #     self.safe_print("error: {}".format(e))
-            # self.safe_print('    Failed to load extension {}\n    ({}: {})'.format(cog, type(e).__name__, e))
-        print()
-        self.safe_print(' [v] Bot information:')
-        self.safe_print('   --- Id: {}'.format(self.user.id))
-        self.safe_print('   --- Name: {}'.format(self.user))
-        print()
-        self.safe_print(' [v] Command prefix: {}'.format(self.prefix))
-        print()
-        self.safe_print(' [v] Connected! ({})'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-        print()
-        print()
+            except Exception as e:
+                self.safe_print("error: {}".format(e))
+                self.safe_print('    Failed to load extension {}\n    ({}: {})'.format(cog, type(e).__name__, e))
+            print()
+            self.safe_print(' [v] Bot information:')
+            self.safe_print('   --- Id: {}'.format(self.user.id))
+            self.safe_print('   --- Name: {}'.format(self.user))
+            print()
+            self.safe_print(' [v] Command prefix: {}'.format(self.prefix))
+            print()
+            self.safe_print(' [v] Connected! ({})'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            print()
+            print()
                 
-        # except Exception as e:
-        #     print(type(e).__name__ + ': ' + str(e))
+        except Exception as e:
+            print(type(e).__name__ + ': ' + str(e))
 
     async def on_error(self, event, *args, **kwargs):
         ex_type, ex, stack = sys.exc_info()
