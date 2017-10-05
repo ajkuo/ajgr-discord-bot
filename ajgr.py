@@ -27,7 +27,7 @@ class AJGRbot(discord.Client):
         super().__init__(*args, **kwargs)
         self.aiosession = aiohttp.ClientSession(loop=self.loop)
         self.prefix = config.command_prefix
-        self.module_list = ['mods.Fun']
+        self.module_list = [] #example: ['mods.Fun']
         self.running_module_name = []
         self.running_module = {}
 
