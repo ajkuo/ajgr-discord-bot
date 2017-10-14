@@ -28,7 +28,11 @@ class AJGRbot(discord.Client):
         super().__init__(*args, **kwargs)
         self.aiosession = aiohttp.ClientSession(loop=self.loop)
         self.prefix = config.command_prefix
+<<<<<<< HEAD
         self.module_list = config.DEFAULT_MODULES
+=======
+        self.module_list = [] #example: ['mods.Fun']
+>>>>>>> 9de7e63ffc22344d5ee96b48e630438ddbbfe50e
         self.running_module_name = []
         self.running_module = {}
         self.db = Db()
@@ -59,6 +63,7 @@ class AJGRbot(discord.Client):
             os.system('cls')
             with open("welcome_ascii.txt") as text_file:
                 print(text_file.read())
+<<<<<<< HEAD
             print()
             for mod in self.module_list:
                 try:
@@ -80,6 +85,27 @@ class AJGRbot(discord.Client):
             await self.change_status()
             print()
             self.safe_print(' [v] {}  -- Connected. Enjoy it!'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+=======
+            print("                                      Version:{}".format(config.VERSION))
+            print()
+            try:
+                for mod in self.module_list:
+                    self.load_module(mod)
+                    print(" [v] Module '{}' is ready.".format(mod))
+
+            except Exception as e:
+                self.safe_print("error: {}".format(e))
+                self.safe_print('    Failed to load extension {}\n    ({}: {})'.format(cog, type(e).__name__, e))
+            print()
+            self.safe_print(' [v] Bot information:')
+            self.safe_print('   --- Id: {}'.format(self.user.id))
+            self.safe_print('   --- Name: {}'.format(self.user))
+            print()
+            self.safe_print(' [v] Command prefix: {}'.format(self.prefix))
+            print()
+            self.safe_print(' [v] Connected! ({})'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            print()
+>>>>>>> 9de7e63ffc22344d5ee96b48e630438ddbbfe50e
             print()
                 
         except Exception as e:
