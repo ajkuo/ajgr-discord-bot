@@ -246,9 +246,6 @@ class Currency(Module):
             usr = message.author
         else:
             usr = message.mentions[0]
-        
-        self.CheckSaveStatus(usr)
-
         usr_rank = 0
         total_usr = 0
         res = self.bot.db.get_value("Users", "USER_ID, USER_NAME, USER_MONEY", "1=1 ORDER BY TOTAL_MONEY DESC")
@@ -277,8 +274,6 @@ class Currency(Module):
         else:
             usr = message.mentions[0]
             usr_name = usr.name
-
-        self.CheckSaveStatus(usr)
 
         assets = self.GetUserAssets(usr)    
         embed = discord.Embed(colour=0xFFFF00, description="--", timestamp=datetime.now()-timedelta(hours=8))
