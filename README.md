@@ -34,8 +34,9 @@
   
 第二類的模組，則是在子模組目錄內，再新增一個與新模組同名的目錄，即範例內的 Currency 模組。此類型模組即基於會員模組(Member)開發的貨幣模組，且貨幣模組本身可以再衍生出其他基於貨幣的模組擴充，因此使用第二類的子模組擴充。而此類模組的指令若與上層模組相同，則優先使用下層子模組的指令。  
   
+  
 ## 基本指令
-預設的指令前綴字元為「.」，執行以下指令時請在 Discord 使用「. + 指令」即可。  
+預設的指令前綴字元為「.」，執行以下指令時請在 Discord 使用「. + 指令」即可，例如「.sleep」。  
 
 #### 管理員專用
 (基本 BOT 指令)  
@@ -52,7 +53,7 @@
 3. addvicekey <關鍵字|同義詞> <新同義詞> - 新增指定關鍵字的同義詞，當出現同義詞時，BOT也會做出相同回應，請注意系統並不會檢查同義詞是否重複。  
   
 ( Currency 模組)  
-1. setmoney <@User> <add|sub|cover> <金額> - 用來調整用戶的現金，若未標記使用者，則調整自身金額。add為增加指定金額、sub為減少指定金額、cover為直接將用戶的現金變更為指定金額。  
+1. setmoney <@user> <add|sub|cover> <金額> - 用來調整用戶的現金，若未標記使用者，則調整自身金額。add為增加指定金額、sub為減少指定金額、cover為直接將用戶的現金變更為指定金額。  
   
 #### 通用指令
 ( Fun 模組)  
@@ -72,7 +73,7 @@
   
 --  
 BOT 參考資料:  
-[1] NotSoBot - https://github.com/NotSoSuper/NotSoBot  
+[1] NotSoBot - https://github.com/NotSoSuper/NotSoBot  
 [2] Mee6 - https://github.com/cookkkie/mee6  
 [3] MusicBot - https://github.com/Just-Some-Bots/MusicBot  
 [4] Twitter, twemoji - https://github.com/twitter/twemoji
