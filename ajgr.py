@@ -11,6 +11,7 @@ from datetime import datetime
 
 import config
 import exceptions
+from database import Db
 from module import Module
 from utils.decorators import owner_only
 
@@ -27,9 +28,10 @@ class AJGRbot(discord.Client):
         super().__init__(*args, **kwargs)
         self.aiosession = aiohttp.ClientSession(loop=self.loop)
         self.prefix = config.command_prefix
-        self.module_list = ['mods.Fun']
+        self.module_list = config.DEFAULT_MODULES
         self.running_module_name = []
         self.running_module = {}
+        self.db = Db()
 
     def run(self, *args):
         try:
@@ -53,42 +55,35 @@ class AJGRbot(discord.Client):
                 raise self.exit_signal
 
     async def on_ready(self):
-        # try:
-        os.system('cls')
-        with open("welcome_ascii.txt") as text_file:
-            print(text_file.read())
-        print("                                      Version:{}".format(config.VERSION))
-        print()
-       # try:
-        for mod in self.module_list:
-            self.load_module(mod)
-            print(" [v] Module '{}' is ready.".format(mod))
-        # for module in Module.modules:
-        #     print('Loading module {}.'.format(module.__name__))
-        #     module_instance = module(self)
-        #     print("Do")
-        #     self.module_list.append(module_instance)
-        #     print("DONE")
-        # print(self.module_list)
+        try:
+            os.system('cls')
+            with open("welcome_ascii.txt") as text_file:
+                print(text_file.read())
+            print()
+            for mod in self.module_list:
+                try:
+                    res = self.load_module(mod)
+                    if res:
+                        self.safe_print(" [v] Module '{}' is ready.".format(mod))
+                    else:
+                        self.safe_print(" [-] Module '{}' loading failed.".format(mod))
+                        self.safe_print("   --- (Please check the parent module have been loading.)")
 
-            # self.safe_print('    Module "{0}" is ready.'.format(cog))
-
-        # except Exception as e:
-        #     self.safe_print("error: {}".format(e))
-            # self.safe_print('    Failed to load extension {}\n    ({}: {})'.format(cog, type(e).__name__, e))
-        print()
-        self.safe_print(' [v] Bot information:')
-        self.safe_print('   --- Id: {}'.format(self.user.id))
-        self.safe_print('   --- Name: {}'.format(self.user))
-        print()
-        self.safe_print(' [v] Command prefix: {}'.format(self.prefix))
-        print()
-        self.safe_print(' [v] Connected! ({})'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-        print()
-        print()
+                except Exception as e:
+                    self.safe_print(" [-] Module '{}' loading failed.".format(mod))
+                    self.safe_print("   --- ({}: {})".format(type(e).__name__, e))
+            print()
+            self.safe_print(' [v] Bot information:')
+            self.safe_print('   --- {} / {}'.format(self.user.id, self.user))
+            self.safe_print('   --- Command prefix: {}'.format(self.prefix))
+            print()
+            await self.change_status()
+            print()
+            self.safe_print(' [v] {}  -- Connected. Enjoy it!'.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            print()
                 
-        # except Exception as e:
-        #     print(type(e).__name__ + ': ' + str(e))
+        except Exception as e:
+            print(type(e).__name__ + ': ' + str(e))
 
     async def on_error(self, event, *args, **kwargs):
         ex_type, ex, stack = sys.exc_info()
@@ -107,6 +102,11 @@ class AJGRbot(discord.Client):
         else:
             traceback.print_exc()
 
+    async def on_member_join(self, member):
+        for name in self.running_module:
+            mod = self.running_module[name]
+            self.loop.create_task(mod.on_member_join(member))
+
     async def on_message(self, message):
         # 檢查是否為 BOT 自己傳送的訊息
         if message.author == self.user:
@@ -116,9 +116,15 @@ class AJGRbot(discord.Client):
         if message.author.bot:
             return
 
-        # 檢查是否為私人訊息
+        # 執行每個 Module 裡面的 on_message 事件 (放在這裡是因為不一定要輸入 prefix 才能執行, 也有可能有的模組可以回覆私人訊息)
+        for name in self.running_module:
+            mod = self.running_module[name]
+            self.loop.create_task(mod.on_message(message))
+
+        # 檢查是否為私人訊息 -> 如果某個模組需要用私訊，目前是放在該模組 on_message 事件來偵測，
+        # 但是該模組執行完還是會繼續執行這邊的程式碼，所以目前把提示訊息隱藏，如果完全不會用到私訊功能，可以取消註解。
         if message.channel.is_private:
-            await self.safe_send_message(message.channel, "目前無法回覆私人訊息哦。")
+            # await self.safe_send_message(message.channel, "您的指令錯誤，或是目前無法回覆私人訊息哦。")
             return
 
         message_content = message.content.strip()
@@ -132,9 +138,12 @@ class AJGRbot(discord.Client):
         if not handler:
             for name in self.running_module:
                 mod = self.running_module[name]
-                handler = getattr(mod, 'cmd_%s' % command, None)     
+                temp = getattr(mod, 'cmd_%s' % command, None)                 
+                if temp:
+                    handler = temp                  
             if not handler:
                 return
+
 
         self.safe_print("[Command] {0.id}/{0} ({1})".format(message.author, command))
 
@@ -209,22 +218,30 @@ class AJGRbot(discord.Client):
             raise
         except Exception as e:
             traceback.print_exc()
-
    
     async def change_status(self, status=config.default_status):
         """changes bots status"""
-        if status != ():
-            await self.ws.change_presence(game=discord.Game(name="{0}".format(status)))
+        try:
+            if status != ():
+                await self.ws.change_presence(game=discord.Game(name="{0}".format(status)))
+                self.safe_print(' [v] Bot status now is "{}"'.format(status))
+        except:
+            pass
 
     def safe_print(self, content, *, end='\n', flush=True):
         sys.stdout.buffer.write((content + end).encode('utf-8', 'replace'))
         if flush:
             sys.stdout.flush()
 
-    async def safe_send_message(self, dest, content, *, tts=False, expire_in=0, also_delete=None, quiet=False):
+    async def safe_send_message(self, dest, content=None, *, tts=False, expire_in=0, also_delete=None, quiet=False, embed=None):
         msg = None
         try:
-            msg = await self.send_message(dest, content, tts=tts)
+            if embed != None:
+                msg = await self.send_message(dest, embed=embed)
+            elif content != None:
+                msg = await self.send_message(dest, content, tts=tts)
+            else:
+                return
 
             if msg and expire_in:
                 asyncio.ensure_future(self._wait_delete_msg(msg, expire_in))
@@ -272,10 +289,29 @@ class AJGRbot(discord.Client):
 
     def load_module(self, name):
         if name in self.running_module:
-            return
+            return False
 
-        lib = getattr(importlib.import_module(name), name.split(".")[1])
+        master_module_name = name.split("mods.")[1]
+        if len(master_module_name.split(".")) > 1:
+            if master_module_name.split(".")[-2] == master_module_name.split(".")[-1]:
+                if len(master_module_name.split(".")) > 2:
+                    for i in range(0, len(master_module_name.split(".")) - 2):
+                        check_module_name = "mods." + ".".join(master_module_name.split(".")[:-2]) 
+                        check_module_name += "." + master_module_name.split(".")[-3]
+                        if check_module_name in self.running_module:
+                            pass
+                        else:
+                            return False
+
+            else:
+                master_module_name = master_module_name.split(".")[-2]
+                master_module_name = name[:name.rfind(master_module_name) + len(master_module_name)] + "." + master_module_name
+                if master_module_name not in self.running_module:
+                    return False
+
+        lib = getattr(importlib.import_module(name), name.split(".")[-1])
         self.running_module[name] = lib(self)
+        return True
 
     def unload_module(self, name):
         lib = self.running_module.get(name)
@@ -284,6 +320,7 @@ class AJGRbot(discord.Client):
 
         try:
             func = getattr(lib, 'teardown')
+
         except AttributeError:
             pass
         else:
@@ -292,6 +329,27 @@ class AJGRbot(discord.Client):
             except:
                 pass
         finally:
+            IsMasterModule = False
+            master_module_name = name.split("mods.")[1]
+            if len(master_module_name.split(".")) > 1:
+                if master_module_name.split(".")[-2] == master_module_name.split(".")[-1]:
+                    master_module_name = master_module_name.split(".")[-2]
+                    master_module_name = name[:master_module_name.rfind(master_module_name) - len(master_module_name)]
+                    IsMasterModule = True
+
+            if IsMasterModule:
+                del_mod = []
+                for mod in self.running_module:
+                    if mod == name:
+                        continue
+                    if master_module_name in mod:
+                        del_mod.append(mod)
+                        del sys.modules[mod]
+                        self.module_list.remove(mod)
+                if len(del_mod) > 0:
+                    for del_name in del_mod:
+                        del self.running_module[del_name]
+
             del lib
             del self.running_module[name]
             del sys.modules[name]
@@ -321,7 +379,6 @@ class AJGRbot(discord.Client):
         for module in self.running_module:
             await self.safe_send_message(message.channel, self.running_module[module])
 
-
     # 透過指令將模組上線，直接打模組名稱，前面不用加上 mods. -> 模組要放在 mods/
     @owner_only
     async def cmd_modload(self, message):
@@ -330,9 +387,12 @@ class AJGRbot(discord.Client):
         if module not in self.running_module:
             try:
                 msg = await self.safe_send_message(message.channel,"模組 `{0}` 載入中 ...".format(module))
-                self.load_module(module)
-                self.module_list.append(module)
-                await self.safe_edit_message(msg, "**完成。** 模組 `{0}` 已經順利掛載。".format(module))
+                res = self.load_module(module)
+                if res:
+                    self.module_list.append(module)
+                    await self.safe_edit_message(msg, "**完成。** 模組 `{0}` 已經順利掛載。".format(module))
+                else:
+                    await self.safe_edit_message(msg, "**失敗。** 模組 `{0}` 未掛載，可能是必要模組尚未掛載或是模組已在運行。".format(module))
             except Exception as e:
                 await self.safe_edit_message(msg, "*:warning: **錯誤:** `{}`".format(str(e)))
 
@@ -392,16 +452,8 @@ class AJGRbot(discord.Client):
 
     # 更改 BOT 的大頭照
     @owner_only
-    async def cmd_setavatar(self, message, url=None):
-        """
-        Usage:
-            {command_prefix}setavatar [url]
-
-        Changes the bot's avatar.
-        Attaching a file and leaving the url parameter blank also works.
-        """
-
-
+    async def cmd_setavatar(self, message):
+        url = message.content.split(" ")[1]
         try:
             if message.attachments:
                 thing = message.attachments[0]['url']
@@ -417,7 +469,29 @@ class AJGRbot(discord.Client):
 
         return Response(":ok_hand:", delete_after=20)
 
-    # 更改 BOT 的名字
+    # 更改 BOT 的暱稱
+    @owner_only
+    async def cmd_setnick(self, message):
+        """
+        Usage:
+            {command_prefix}setnick nick
+
+        Changes the bot's nickname.
+        """
+
+        if not message.channel.permissions_for(message.server.me).change_nickname:
+            raise exceptions.CommandError("Unable to change nickname: no permission.")
+
+        nick = " ".join(message.content.split(" ")[1:])
+
+        try:
+            await self.change_nickname(message.server.me, nick)
+        except Exception as e:
+            raise exceptions.CommandError(e, expire_in=20)
+
+        return Response(":ok_hand:", delete_after=20)
+
+    # 更改 BOT 的會員名字 (每小時只能更改二次)
     @owner_only
     async def cmd_setname(self, message):
         """
@@ -436,4 +510,11 @@ class AJGRbot(discord.Client):
             raise exceptions.CommandError(e, expire_in=20)
 
         return Response(":ok_hand:", delete_after=20)
+
+    @owner_only
+    async def cmd_emojiid(self, message):
+        emoji_str = ""
+        for idx, emoji in enumerate(message.server.emojis):
+            emoji_str += "`{0} - {1}: {2}`\n".format(str(idx+1).rjust(2, '0'), emoji.name, emoji.id)
+        await self.safe_send_message(message.channel, emoji_str)
 
