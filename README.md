@@ -1,7 +1,7 @@
 # ajgr-discord-bot
   
-此為 Discord 聊天機器人基底，尚未加入各模組和特殊功能。  
-此 BOT 可以在執行過程使用指令動態添加或移除模組。  
+此為 Discord 聊天機器人基底，尚未加入各模組和特殊功能。此 BOT 可以在執行過程使用指令動態添加或移除模組。  
+歡迎加入**「A.J. Group 滷味小店」**頻道交流，頻道邀請連結：[https://discord.gg/aRy4Ydp](https://discord.gg/aRy4Ydp)  
   
 ## 模組的介紹
 本 BOT 將各功能性指令劃分為不同模組管理，並藉由模組階層的方式來連動，方便管理 BOT 的模組。
