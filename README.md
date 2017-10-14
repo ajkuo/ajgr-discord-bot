@@ -1,7 +1,8 @@
 # ajgr-discord-bot
   
-此為 Discord BOT 的基本雛形款(Python 3)，此 BOT 可以在執行過程使用指令動態添加或移除模組，方便管理各模組。  
-歡迎加入 **「A.J. Group 滷味小店」** 頻道交流，頻道邀請連結：[https://discord.gg/aRy4Ydp](https://discord.gg/aRy4Ydp)  
+此為 Discord BOT 的基本款，使用 **Python 3** 撰寫，並且可以在執行過程使用指令動態添加或移除模組，方便管理各模組，整合度高，讓您輕易撰寫更多新功能，非常適合作為頻道 BOT 的首選，只要使用一隻 BOT 就可以囊括大部分的功能。  
+  
+ 歡迎加入 **「A.J. Group 滷味小店」** 頻道交流，頻道邀請連結：[https://discord.gg/aRy4Ydp](https://discord.gg/aRy4Ydp)  
   
 ## 模組的介紹
 本 BOT 將各功能性指令劃分為不同模組管理，並藉由模組階層的方式來連動，方便管理 BOT 的模組。
