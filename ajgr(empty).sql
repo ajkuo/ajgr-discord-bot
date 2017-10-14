@@ -52,31 +52,10 @@ CREATE TABLE `Users` (
   `USER_EXP_CD` datetime DEFAULT NULL,
   `USER_LEVEL` int(11) DEFAULT '0',
   `USER_MONEY` int(11) DEFAULT '0',
-  `USER_SAVE` int(11) DEFAULT '0',
-  `USER_GOLD` int(11) DEFAULT '0',
-  `USER_CONT` int(11) DEFAULT '0',
   `DAILY_TIME` datetime DEFAULT NULL,
   `BONUS_TIME` datetime DEFAULT NULL,
   PRIMARY KEY (`SN`)
 ) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4;
-
-
--- ----------------------------
--- Table structure for `Users_Save`
--- ----------------------------
-DROP TABLE IF EXISTS `Users_Save`;
-CREATE TABLE `Users_Save` (
-  `SN` bigint(20) NOT NULL AUTO_INCREMENT,
-  `USER_ID` varchar(255) NOT NULL,
-  `AMOUNT` int(11) NOT NULL DEFAULT '0',
-  `RATE` float NOT NULL DEFAULT '0',
-  `SAVE_DATE` datetime NOT NULL,
-  `EXPIRE_DATE` datetime NOT NULL,
-  `RECEIVE` bit(1) NOT NULL DEFAULT b'0',
-  `TOTAL_INTEREST` int(11) NOT NULL DEFAULT '0',
-  `DAYS` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`SN`)
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4;
 
 
 -- ----------------------------
